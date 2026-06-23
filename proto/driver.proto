@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/ThalaPravin/RideMesh/proto;pb";
+
+service DriverService {
+  rpc RegisterDriver(RegisterDriverRequest) returns (DriverResponse);
+  rpc UpdateDriverStatus(UpdateDriverStatusRequest) returns (DriverResponse);
+  rpc GetDriver(GetDriverRequest) returns (DriverResponse);
+}
+
+message RegisterDriverRequest {
+  string first_name = 1;
+  string last_name = 2;
+  string phone_no = 3;
+  string vehicle_model = 4;
+  string vehicle_number = 5;
+  string vehicle_type = 6; // SUV, Micro, Mini, Luxury
+}
+
+message UpdateDriverStatusRequest {
+  string driver_id = 1;
+  bool is_online = 2;
+}
+
+message GetDriverRequest {
+  string driver_id = 1;
+}
+
+message DriverResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string phone_no = 4;
+  string vehicle_model = 5;
+  string vehicle_number = 6;
+  string vehicle_type = 7;
+  bool is_online = 8;
+  double rating = 9;
+}

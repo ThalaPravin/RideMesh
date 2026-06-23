@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/ThalaPravin/RideMesh/proto;pb";
+
+service TripService {
+  rpc CreateTrip(CreateTripRequest) returns (TripResponse);
+  rpc GetTrip(GetTripRequest) returns (TripResponse);
+  rpc UpdateTripStatus(UpdateTripStatusRequest) returns (TripResponse);
+  rpc CancelTrip(CancelTripRequest) returns (TripResponse);
+}
+
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+message CreateTripRequest {
+  string user_id = 1;
+  Location pickup = 2;
+  Location destination = 3;
+  string vehicle_type = 4;
+}
+
+message GetTripRequest {
+  string trip_id = 1;
+}
+
+message UpdateTripStatusRequest {
+  string trip_id = 1;
+  string status = 2; // ASSIGNED, ARRIVED, STARTED, COMPLETED, CANCELED
+  string driver_id = 3; // optional, used when matching assigns driver
+}
+
+message CancelTripRequest {
+  string trip_id = 1;
+  string user_id = 2;
+  string reason = 3;
+}
+
+message TripResponse {
+  string id = 1;
+  string user_id = 2;
+  string driver_id = 3;
+  Location pickup = 4;
+  Location destination = 5;
+  double amount = 6;
+  string status = 7;
+  string created_at = 8;
+  string started_at = 9;
+  string ended_at = 10;
+}

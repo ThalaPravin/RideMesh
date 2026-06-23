@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/ThalaPravin/RideMesh/proto;pb";
+
+service PaymentService {
+  rpc ProcessPayment(ProcessPaymentRequest) returns (ProcessPaymentResponse);
+  rpc GetPaymentStatus(GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
+}
+
+message ProcessPaymentRequest {
+  string trip_id = 1;
+  string user_id = 2;
+  double amount = 3;
+}
+
+message ProcessPaymentResponse {
+  string transaction_id = 1;
+  string status = 2; // SUCCESS, FAILED
+  string processed_at = 3;
+}
+
+message GetPaymentStatusRequest {
+  string transaction_id = 1;
+}
+
+message GetPaymentStatusResponse {
+  string transaction_id = 2;
+  string trip_id = 3;
+  double amount = 4;
+  string status = 5;
+  string processed_at = 6;
+}

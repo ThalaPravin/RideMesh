@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ridemesh-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ridemesh
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: ridemesh-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: ridemesh-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: ridemesh-kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: user
+    container_name: ridemesh-user-service
+    ports:
+      - "50051:50051"
+    environment:
+      PORT: "50051"
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+    depends_on:
+      - postgres
+
+  driver-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: driver
+    container_name: ridemesh-driver-service
+    ports:
+      - "50052:50052"
+    environment:
+      PORT: "50052"
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+    depends_on:
+      - postgres
+
+  trip-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: trip
+    container_name: ridemesh-trip-service
+    ports:
+      - "50053:50053"
+    environment:
+      PORT: "50053"
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+      KAFKA_BROKERS: "kafka:29092"
+    depends_on:
+      - postgres
+      - kafka
+
+  matching-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: matching
+    container_name: ridemesh-matching-service
+    ports:
+      - "50054:50054"
+    environment:
+      PORT: "50054"
+      REDIS_URL: "redis:6379"
+      KAFKA_BROKERS: "kafka:29092"
+    depends_on:
+      - redis
+      - kafka
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: payment
+    container_name: ridemesh-payment-service
+    ports:
+      - "50055:50055"
+    environment:
+      PORT: "50055"
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+      KAFKA_BROKERS: "kafka:29092"
+    depends_on:
+      - postgres
+      - kafka
+
+volumes:
+  postgres_data:
+  redis_data:
