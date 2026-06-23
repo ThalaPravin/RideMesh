@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ThalaPravin/RideMesh/pkg/config"
+	"github.com/ThalaPravin/RideMesh/pkg/db"
 	"github.com/ThalaPravin/RideMesh/pkg/logger"
 	pb "github.com/ThalaPravin/RideMesh/proto"
 )
@@ -48,6 +49,8 @@ func main() {
 		fx.Provide(
 			config.LoadConfig,
 			logger.NewLogger,
+			db.NewDBPool,
+			NewDriverRepository,
 			NewDriverHandler,
 		),
 		fx.Invoke(StartGRPCServer),

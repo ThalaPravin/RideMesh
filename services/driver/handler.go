@@ -2,19 +2,26 @@ package main
 
 import (
 	"context"
+	"errors"
+
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "github.com/ThalaPravin/RideMesh/proto"
 )
 
 // DriverHandler implements the gRPC DriverServiceServer interface
 type DriverHandler struct {
 	pb.UnimplementedDriverServiceServer
+	repo   *DriverRepository
 	logger *zap.Logger
 }
 
 // NewDriverHandler creates a new DriverHandler instance
-func NewDriverHandler(logger *zap.Logger) *DriverHandler {
+func NewDriverHandler(repo *DriverRepository, logger *zap.Logger) *DriverHandler {
 	return &DriverHandler{
+		repo:   repo,
 		logger: logger,
 	}
 }
@@ -23,17 +30,37 @@ func NewDriverHandler(logger *zap.Logger) *DriverHandler {
 func (h *DriverHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriverRequest) (*pb.DriverResponse, error) {
 	h.logger.Info("RegisterDriver request received", zap.String("phone_no", req.GetPhoneNo()))
 
-	// TODO: Implement driver registration in Phase 2
+	if req.GetPhoneNo() == "" || req.GetFirstName() == "" || req.GetVehicleNumber() == "" {
+		return nil, status.Error(codes.InvalidArgument, "first_name, phone_no, and vehicle_number are required")
+	}
+
+	d, err := h.repo.CreateDriver(
+		ctx,
+		req.GetFirstName(),
+		req.GetLastName(),
+		req.GetPhoneNo(),
+		req.GetVehicleModel(),
+		req.GetVehicleNumber(),
+		req.GetVehicleType(),
+	)
+	if err != nil {
+		if errors.Is(err, ErrDriverAlreadyExists) {
+			return nil, status.Error(codes.AlreadyExists, "driver with this phone or vehicle number already exists")
+		}
+		h.logger.Error("Failed to register driver in database", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to register driver")
+	}
+
 	return &pb.DriverResponse{
-		Id:            "dummy-driver-uuid",
-		FirstName:     req.GetFirstName(),
-		LastName:      req.GetLastName(),
-		PhoneNo:       req.GetPhoneNo(),
-		VehicleModel:  req.GetVehicleModel(),
-		VehicleNumber: req.GetVehicleNumber(),
-		VehicleType:   req.GetVehicleType(),
-		IsOnline:      false,
-		Rating:        5.0,
+		Id:            d.ID,
+		FirstName:     d.FirstName,
+		LastName:      d.LastName,
+		PhoneNo:       d.PhoneNo,
+		VehicleModel:  d.VehicleModel,
+		VehicleNumber: d.VehicleNumber,
+		VehicleType:   d.VehicleType,
+		IsOnline:      d.IsOnline,
+		Rating:        d.Rating,
 	}, nil
 }
 
@@ -41,17 +68,29 @@ func (h *DriverHandler) RegisterDriver(ctx context.Context, req *pb.RegisterDriv
 func (h *DriverHandler) UpdateDriverStatus(ctx context.Context, req *pb.UpdateDriverStatusRequest) (*pb.DriverResponse, error) {
 	h.logger.Info("UpdateDriverStatus request received", zap.String("driver_id", req.GetDriverId()), zap.Bool("is_online", req.GetIsOnline()))
 
-	// TODO: Implement status updates & DB persistence in Phase 2
+	if req.GetDriverId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "driver ID is required")
+	}
+
+	d, err := h.repo.UpdateDriverStatus(ctx, req.GetDriverId(), req.GetIsOnline())
+	if err != nil {
+		if errors.Is(err, ErrDriverNotFound) {
+			return nil, status.Error(codes.NotFound, "driver not found")
+		}
+		h.logger.Error("Failed to update driver status in database", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update status")
+	}
+
 	return &pb.DriverResponse{
-		Id:            req.GetDriverId(),
-		FirstName:     "Goku",
-		LastName:      "Son",
-		PhoneNo:       "11111111",
-		VehicleModel:  "Honda CR-V",
-		VehicleNumber: "MH 01A B 4321",
-		VehicleType:   "SUV",
-		IsOnline:      req.GetIsOnline(),
-		Rating:        4.9,
+		Id:            d.ID,
+		FirstName:     d.FirstName,
+		LastName:      d.LastName,
+		PhoneNo:       d.PhoneNo,
+		VehicleModel:  d.VehicleModel,
+		VehicleNumber: d.VehicleNumber,
+		VehicleType:   d.VehicleType,
+		IsOnline:      d.IsOnline,
+		Rating:        d.Rating,
 	}, nil
 }
 
@@ -59,16 +98,28 @@ func (h *DriverHandler) UpdateDriverStatus(ctx context.Context, req *pb.UpdateDr
 func (h *DriverHandler) GetDriver(ctx context.Context, req *pb.GetDriverRequest) (*pb.DriverResponse, error) {
 	h.logger.Info("GetDriver request received", zap.String("driver_id", req.GetDriverId()))
 
-	// TODO: Implement database lookup in Phase 2
+	if req.GetDriverId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "driver ID is required")
+	}
+
+	d, err := h.repo.GetDriverByID(ctx, req.GetDriverId())
+	if err != nil {
+		if errors.Is(err, ErrDriverNotFound) {
+			return nil, status.Error(codes.NotFound, "driver not found")
+		}
+		h.logger.Error("Failed to query driver by ID", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to retrieve profile")
+	}
+
 	return &pb.DriverResponse{
-		Id:            req.GetDriverId(),
-		FirstName:     "Goku",
-		LastName:      "Son",
-		PhoneNo:       "11111111",
-		VehicleModel:  "Honda CR-V",
-		VehicleNumber: "MH 01A B 4321",
-		VehicleType:   "SUV",
-		IsOnline:      true,
-		Rating:        4.9,
+		Id:            d.ID,
+		FirstName:     d.FirstName,
+		LastName:      d.LastName,
+		PhoneNo:       d.PhoneNo,
+		VehicleModel:  d.VehicleModel,
+		VehicleNumber: d.VehicleNumber,
+		VehicleType:   d.VehicleType,
+		IsOnline:      d.IsOnline,
+		Rating:        d.Rating,
 	}, nil
 }
