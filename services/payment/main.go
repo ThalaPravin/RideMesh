@@ -9,6 +9,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ThalaPravin/RideMesh/pkg/config"
+	"github.com/ThalaPravin/RideMesh/pkg/db"
+	"github.com/ThalaPravin/RideMesh/pkg/kafka"
 	"github.com/ThalaPravin/RideMesh/pkg/logger"
 	pb "github.com/ThalaPravin/RideMesh/proto"
 )
@@ -48,9 +50,16 @@ func main() {
 		fx.Provide(
 			config.LoadConfig,
 			logger.NewLogger,
+			db.NewDBPool,
+			kafka.NewProducer,
+			NewPaymentRepository,
 			NewPaymentHandler,
+			NewPaymentConsumer,
 		),
-		fx.Invoke(StartGRPCServer),
+		fx.Invoke(
+			StartGRPCServer,
+			StartConsumers,
+		),
 	)
 
 	app.Run()

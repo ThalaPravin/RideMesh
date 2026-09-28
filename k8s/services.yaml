@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: ridemesh
+spec:
+  ports:
+    - port: 50051
+      targetPort: 50051
+  selector:
+    app: user-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: ridemesh
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: thalapravin/ridemesh-user-service:latest
+          env:
+            - name: PORT
+              value: "50051"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+          ports:
+            - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driver-service
+  namespace: ridemesh
+spec:
+  ports:
+    - port: 50052
+      targetPort: 50052
+  selector:
+    app: driver-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: driver-service
+  namespace: ridemesh
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: driver-service
+  template:
+    metadata:
+      labels:
+        app: driver-service
+    spec:
+      containers:
+        - name: driver-service
+          image: thalapravin/ridemesh-driver-service:latest
+          env:
+            - name: PORT
+              value: "50052"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+          ports:
+            - containerPort: 50052
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trip-service
+  namespace: ridemesh
+spec:
+  ports:
+    - port: 50053
+      targetPort: 50053
+  selector:
+    app: trip-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip-service
+  namespace: ridemesh
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trip-service
+  template:
+    metadata:
+      labels:
+        app: trip-service
+    spec:
+      containers:
+        - name: trip-service
+          image: thalapravin/ridemesh-trip-service:latest
+          env:
+            - name: PORT
+              value: "50053"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+          ports:
+            - containerPort: 50053
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matching-service
+  namespace: ridemesh
+spec:
+  ports:
+    - port: 50054
+      targetPort: 50054
+  selector:
+    app: matching-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matching-service
+  namespace: ridemesh
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: matching-service
+  template:
+    metadata:
+      labels:
+        app: matching-service
+    spec:
+      containers:
+        - name: matching-service
+          image: thalapravin/ridemesh-matching-service:latest
+          env:
+            - name: PORT
+              value: "50054"
+            - name: REDIS_URL
+              value: "redis:6379"
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+          ports:
+            - containerPort: 50054
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: ridemesh
+spec:
+  ports:
+    - port: 50055
+      targetPort: 50055
+  selector:
+    app: payment-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: ridemesh
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: thalapravin/ridemesh-payment-service:latest
+          env:
+            - name: PORT
+              value: "50055"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres:5432/ridemesh?sslmode=disable"
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+          ports:
+            - containerPort: 50055

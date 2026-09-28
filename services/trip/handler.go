@@ -2,37 +2,95 @@ package main
 
 import (
 	"context"
+	"errors"
+	"time"
+
+	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/ThalaPravin/RideMesh/pkg/kafka"
 	pb "github.com/ThalaPravin/RideMesh/proto"
 )
 
 // TripHandler implements the gRPC TripServiceServer interface
 type TripHandler struct {
 	pb.UnimplementedTripServiceServer
-	logger *zap.Logger
+	repo     *TripRepository
+	producer *kafka.Producer
+	logger   *zap.Logger
 }
 
 // NewTripHandler creates a new TripHandler instance
-func NewTripHandler(logger *zap.Logger) *TripHandler {
+func NewTripHandler(repo *TripRepository, producer *kafka.Producer, logger *zap.Logger) *TripHandler {
 	return &TripHandler{
-		logger: logger,
+		repo:     repo,
+		producer: producer,
+		logger:   logger,
 	}
 }
 
-// CreateTrip registers a new ride request and triggers event routing
+// CreateTrip registers a new ride request and triggers event routing via Kafka
 func (h *TripHandler) CreateTrip(ctx context.Context, req *pb.CreateTripRequest) (*pb.TripResponse, error) {
 	h.logger.Info("CreateTrip request received", zap.String("user_id", req.GetUserId()), zap.String("vehicle_type", req.GetVehicleType()))
 
-	// TODO: Publish trip.requested to Kafka and save to PG in Phase 3
+	if req.GetUserId() == "" || req.GetPickup() == nil || req.GetDestination() == nil {
+		return nil, status.Error(codes.InvalidArgument, "user_id, pickup, and destination are required")
+	}
+
+	amount := 350.0 // Default calculated ride fare
+
+	t, err := h.repo.CreateTrip(
+		ctx,
+		req.GetUserId(),
+		req.GetPickup().GetLatitude(),
+		req.GetPickup().GetLongitude(),
+		req.GetDestination().GetLatitude(),
+		req.GetDestination().GetLongitude(),
+		amount,
+	)
+	if err != nil {
+		h.logger.Error("Failed to save trip to database", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to create trip")
+	}
+
+	// Publish trip.requested event to Kafka
+	event := kafka.TripRequestedEvent{
+		BaseEvent: kafka.BaseEvent{
+			EventID:   uuid.New().String(),
+			EventType: "TRIP_REQUESTED",
+			Timestamp: time.Now(),
+		},
+		Payload: kafka.TripRequestedPayload{
+			TripID:      t.ID,
+			UserID:      t.UserID,
+			PickupLat:   t.PickupLat,
+			PickupLon:   t.PickupLon,
+			DestLat:     t.DestLat,
+			DestLon:     t.DestLon,
+			VehicleType: req.GetVehicleType(),
+			Amount:      t.Amount,
+		},
+	}
+
+	go func() {
+		pubCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := h.producer.Publish(pubCtx, kafka.TopicTripRequested, t.ID, event); err != nil {
+			h.logger.Error("Async failed to publish trip.requested event", zap.Error(err))
+		}
+	}()
+
 	return &pb.TripResponse{
-		Id:          "dummy-trip-uuid",
-		UserId:      req.GetUserId(),
+		Id:          t.ID,
+		UserId:      t.UserID,
 		DriverId:    "",
 		Pickup:      req.GetPickup(),
 		Destination: req.GetDestination(),
-		Amount:      350.0,
-		Status:      "REQUESTED",
-		CreatedAt:   "2026-06-23T01:20:00Z",
+		Amount:      t.Amount,
+		Status:      t.Status,
+		CreatedAt:   t.CreatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -40,33 +98,104 @@ func (h *TripHandler) CreateTrip(ctx context.Context, req *pb.CreateTripRequest)
 func (h *TripHandler) GetTrip(ctx context.Context, req *pb.GetTripRequest) (*pb.TripResponse, error) {
 	h.logger.Info("GetTrip request received", zap.String("trip_id", req.GetTripId()))
 
-	// TODO: Query from PostgreSQL in Phase 3
+	if req.GetTripId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "trip ID is required")
+	}
+
+	t, err := h.repo.GetTripByID(ctx, req.GetTripId())
+	if err != nil {
+		if errors.Is(err, ErrTripNotFound) {
+			return nil, status.Error(codes.NotFound, "trip not found")
+		}
+		h.logger.Error("Failed to query trip by ID", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to retrieve trip")
+	}
+
+	driverID := ""
+	if t.DriverID.Valid {
+		driverID = t.DriverID.String
+	}
+
+	startedAt := ""
+	if t.StartedAt.Valid {
+		startedAt = t.StartedAt.Time.Format(time.RFC3339)
+	}
+
+	endedAt := ""
+	if t.EndedAt.Valid {
+		endedAt = t.EndedAt.Time.Format(time.RFC3339)
+	}
+
 	return &pb.TripResponse{
-		Id:        req.GetTripId(),
-		UserId:    "dummy-user-uuid",
-		DriverId:  "dummy-driver-uuid",
-		Pickup:    &pb.Location{Latitude: 12.9716, Longitude: 77.5946},
-		Destination: &pb.Location{Latitude: 12.9279, Longitude: 77.6271},
-		Amount:    350.0,
-		Status:    "ASSIGNED",
-		CreatedAt: "2026-06-23T01:20:00Z",
+		Id:        t.ID,
+		UserId:    t.UserID,
+		DriverId:  driverID,
+		Pickup:    &pb.Location{Latitude: t.PickupLat, Longitude: t.PickupLon},
+		Destination: &pb.Location{Latitude: t.DestLat, Longitude: t.DestLon},
+		Amount:    t.Amount,
+		Status:    t.Status,
+		CreatedAt: t.CreatedAt.Format(time.RFC3339),
+		StartedAt: startedAt,
+		EndedAt:   endedAt,
 	}, nil
 }
 
-// UpdateTripStatus handles state updates and notifies subscribers
+// UpdateTripStatus handles state updates and notifies Kafka subscribers on completion
 func (h *TripHandler) UpdateTripStatus(ctx context.Context, req *pb.UpdateTripStatusRequest) (*pb.TripResponse, error) {
 	h.logger.Info("UpdateTripStatus request received", zap.String("trip_id", req.GetTripId()), zap.String("status", req.GetStatus()))
 
-	// TODO: Persist state changes and broadcast Kafka lifecycle events in Phase 3
+	if req.GetTripId() == "" || req.GetStatus() == "" {
+		return nil, status.Error(codes.InvalidArgument, "trip_id and status are required")
+	}
+
+	t, err := h.repo.UpdateTripStatus(ctx, req.GetTripId(), req.GetStatus())
+	if err != nil {
+		if errors.Is(err, ErrTripNotFound) {
+			return nil, status.Error(codes.NotFound, "trip not found")
+		}
+		h.logger.Error("Failed to update trip status in database", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update status")
+	}
+
+	driverID := ""
+	if t.DriverID.Valid {
+		driverID = t.DriverID.String
+	}
+
+	// If trip completed, publish trip.completed event to Kafka
+	if req.GetStatus() == "COMPLETED" {
+		event := kafka.TripCompletedEvent{
+			BaseEvent: kafka.BaseEvent{
+				EventID:   uuid.New().String(),
+				EventType: "TRIP_COMPLETED",
+				Timestamp: time.Now(),
+			},
+			Payload: kafka.TripCompletedPayload{
+				TripID:   t.ID,
+				UserID:   t.UserID,
+				DriverID: driverID,
+				Amount:   t.Amount,
+			},
+		}
+
+		go func() {
+			pubCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := h.producer.Publish(pubCtx, kafka.TopicTripCompleted, t.ID, event); err != nil {
+				h.logger.Error("Async failed to publish trip.completed event", zap.Error(err))
+			}
+		}()
+	}
+
 	return &pb.TripResponse{
-		Id:        req.GetTripId(),
-		UserId:    "dummy-user-uuid",
-		DriverId:  req.GetDriverId(),
-		Pickup:    &pb.Location{Latitude: 12.9716, Longitude: 77.5946},
-		Destination: &pb.Location{Latitude: 12.9279, Longitude: 77.6271},
-		Amount:    350.0,
-		Status:    req.GetStatus(),
-		CreatedAt: "2026-06-23T01:20:00Z",
+		Id:        t.ID,
+		UserId:    t.UserID,
+		DriverId:  driverID,
+		Pickup:    &pb.Location{Latitude: t.PickupLat, Longitude: t.PickupLon},
+		Destination: &pb.Location{Latitude: t.DestLat, Longitude: t.DestLon},
+		Amount:    t.Amount,
+		Status:    t.Status,
+		CreatedAt: t.CreatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -74,15 +203,27 @@ func (h *TripHandler) UpdateTripStatus(ctx context.Context, req *pb.UpdateTripSt
 func (h *TripHandler) CancelTrip(ctx context.Context, req *pb.CancelTripRequest) (*pb.TripResponse, error) {
 	h.logger.Info("CancelTrip request received", zap.String("trip_id", req.GetTripId()), zap.String("reason", req.GetReason()))
 
-	// TODO: Verify cancellation eligibility and cancel in Phase 3
+	if req.GetTripId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "trip ID is required")
+	}
+
+	t, err := h.repo.CancelTrip(ctx, req.GetTripId())
+	if err != nil {
+		if errors.Is(err, ErrTripNotFound) {
+			return nil, status.Error(codes.NotFound, "trip not found")
+		}
+		h.logger.Error("Failed to cancel trip in database", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to cancel trip")
+	}
+
 	return &pb.TripResponse{
-		Id:        req.GetTripId(),
-		UserId:    req.GetUserId(),
-		DriverId:  "dummy-driver-uuid",
-		Pickup:    &pb.Location{Latitude: 12.9716, Longitude: 77.5946},
-		Destination: &pb.Location{Latitude: 12.9279, Longitude: 77.6271},
-		Amount:    350.0,
-		Status:    "CANCELED",
-		CreatedAt: "2026-06-23T01:20:00Z",
+		Id:        t.ID,
+		UserId:    t.UserID,
+		DriverId:  "",
+		Pickup:    &pb.Location{Latitude: t.PickupLat, Longitude: t.PickupLon},
+		Destination: &pb.Location{Latitude: t.DestLat, Longitude: t.DestLon},
+		Amount:    t.Amount,
+		Status:    t.Status,
+		CreatedAt: t.CreatedAt.Format(time.RFC3339),
 	}, nil
 }

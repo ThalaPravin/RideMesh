@@ -9,7 +9,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/ThalaPravin/RideMesh/pkg/config"
+	"github.com/ThalaPravin/RideMesh/pkg/kafka"
 	"github.com/ThalaPravin/RideMesh/pkg/logger"
+	"github.com/ThalaPravin/RideMesh/pkg/redis"
 	pb "github.com/ThalaPravin/RideMesh/proto"
 )
 
@@ -48,9 +50,15 @@ func main() {
 		fx.Provide(
 			config.LoadConfig,
 			logger.NewLogger,
+			redis.NewRedisClient,
+			kafka.NewProducer,
 			NewMatchingHandler,
+			NewMatchingConsumer,
 		),
-		fx.Invoke(StartGRPCServer),
+		fx.Invoke(
+			StartGRPCServer,
+			StartConsumers,
+		),
 	)
 
 	app.Run()
