@@ -13,6 +13,8 @@ RideFlow is a high-performance, event-driven, distributed ride-hailing backend p
 
 ## 🏗️ System Architecture
 
+![RideFlow System Architecture](docs/architecture.svg)
+
 RideFlow is structured to optimize transactional throughput and maintain low-latency response times for matching. Below is the layout of the communication paths and event flows between the services:
 
 ```mermaid
@@ -158,9 +160,18 @@ sequenceDiagram
 
 ## 🗺️ Implementation Roadmap
 
-* **Phase 1**: Workspace Monorepo Setup, Protobuf definitions, Docker-Compose, Uber Fx stubs. *(Completed)*
-* **Phase 2**: User & Driver services implementation + PostgreSQL Schema & Repositories + JWT Auth. *(Completed)*
-* **Phase 3**: Trip lifecycle management & Kafka event broker wiring. *(In Progress)*
-* **Phase 4**: Redis Geospatial tracking & Matching engine.
-* **Phase 5**: Payment processing, mock gateway, and completion hooks.
-* **Phase 6**: Containerization (Docker), Kubernetes manifests, Prometheus logging, and observability dashboards.
+* **Phase 1**: Workspace Monorepo Setup, Protobuf definitions, Docker-Compose, Uber Fx stubs. ✅ *(Completed)*
+* **Phase 2**: User & Driver services implementation + PostgreSQL Schema & Repositories + JWT Auth. ✅ *(Completed)*
+* **Phase 3**: Trip lifecycle management & Kafka event broker wiring. ✅ *(Completed)*
+* **Phase 4**: Redis Geospatial tracking & Matching engine. ✅ *(Completed)*
+* **Phase 5**: Payment processing, mock gateway, and completion hooks. ✅ *(Completed)*
+* **Phase 6**: Containerization (Docker), Kubernetes manifests, Prometheus logging, CI/CD Pipeline. ✅ *(Completed)*
+
+---
+
+## 🧪 Testing & CI/CD Pipeline
+
+* **Unit Testing**: Go test suite covering JWT authentication (`pkg/auth/auth_test.go`), configuration parsing (`pkg/config/config_test.go`), and Kafka event serialization (`pkg/kafka/kafka_test.go`).
+* **Automated CI/CD**: Powered by GitHub Actions (`.github/workflows/ci.yml`). Automatically runs unit tests, verifies multi-stage Docker builds across all 5 services, and lints Kubernetes manifests on every pull request and push to `main`.
+* **Observability**: Prometheus metrics client (`pkg/metrics/metrics.go`) exposing `/metrics` (trip counts, latency histograms) and `/healthz` liveness probes.
+

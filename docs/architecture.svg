@@ -1,0 +1,284 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 780" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+
+    <!-- Card Gradients -->
+    <linearGradient id="serviceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <linearGradient id="kafkaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#311025" />
+      <stop offset="100%" stop-color="#1f1124" />
+    </linearGradient>
+
+    <linearGradient id="redisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b1115" />
+      <stop offset="100%" stop-color="#1f0f11" />
+    </linearGradient>
+
+    <linearGradient id="pgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d2b45" />
+      <stop offset="100%" stop-color="#091b2c" />
+    </linearGradient>
+
+    <!-- Glow & Shadow Filters -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- Arrow Markers -->
+    <marker id="arrowGrpc" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 6 4 L 0 7 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrowKafka" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 6 4 L 0 7 z" fill="#f43f5e" />
+    </marker>
+    <marker id="arrowRedis" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 6 4 L 0 7 z" fill="#ef4444" />
+    </marker>
+    <marker id="arrowPg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 6 4 L 0 7 z" fill="#60a5fa" />
+    </marker>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 800; font-size: 26px; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; fill: #94a3b8; }
+    .section-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; fill: #cbd5e1; }
+    .card-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700; font-size: 15px; fill: #f1f5f9; }
+    .card-subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; fill: #64748b; }
+    .badge { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; font-weight: 600; }
+    .topic-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 600; fill: #fda4af; }
+    .line-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; }
+  </style>
+
+  <!-- Deep Canvas Background -->
+  <rect width="1150" height="780" rx="16" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Header Section -->
+  <g transform="translate(40, 45)">
+    <text x="0" y="0" class="title">RideFlow Architecture</text>
+    <text x="0" y="24" class="subtitle">Distributed Event-Driven Ride-Hailing Platform • Go • Uber Fx • gRPC • Apache Kafka • Redis Geo • PostgreSQL • Kubernetes</text>
+  </g>
+
+  <!-- SECTION 1: CLIENTS & INGRESS -->
+  <g transform="translate(40, 110)">
+    <rect width="150" height="470" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="75" y="30" text-anchor="middle" class="section-title">CLIENT TIERS</text>
+
+    <!-- Passenger Client -->
+    <g transform="translate(15, 60)" filter="url(#cardShadow)">
+      <rect width="120" height="100" rx="8" fill="url(#serviceGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="60" cy="35" r="16" fill="#0369a1"/>
+      <text x="60" y="40" text-anchor="middle" fill="#e0f2fe" font-size="14">👤</text>
+      <text x="60" y="68" text-anchor="middle" class="card-title" font-size="13">Rider Client</text>
+      <text x="60" y="84" text-anchor="middle" class="card-subtitle">Mobile / Web</text>
+    </g>
+
+    <!-- Driver Client -->
+    <g transform="translate(15, 230)" filter="url(#cardShadow)">
+      <rect width="120" height="100" rx="8" fill="url(#serviceGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="60" cy="35" r="16" fill="#0369a1"/>
+      <text x="60" y="40" text-anchor="middle" fill="#e0f2fe" font-size="14">🚗</text>
+      <text x="60" y="68" text-anchor="middle" class="card-title" font-size="13">Driver Client</text>
+      <text x="60" y="84" text-anchor="middle" class="card-subtitle">Telemetry Pings</text>
+    </g>
+  </g>
+
+  <!-- SECTION 2: MICROSERVICES LAYER (Uber Fx + gRPC) -->
+  <g transform="translate(230, 110)">
+    <rect width="250" height="470" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" opacity="0.9"/>
+    <text x="125" y="30" text-anchor="middle" class="section-title" fill="#38bdf8">GOLANG MICROSERVICES</text>
+
+    <!-- User Service -->
+    <g transform="translate(20, 50)" filter="url(#cardShadow)">
+      <rect width="210" height="65" rx="8" fill="url(#serviceGrad)" stroke="#475569" stroke-width="1.2"/>
+      <text x="15" y="28" class="card-title">User Service</text>
+      <text x="15" y="46" class="card-subtitle">Auth (JWT) • Profiles • Registration</text>
+      <rect x="150" y="14" width="45" height="18" rx="4" fill="#0284c7"/>
+      <text x="172" y="26" text-anchor="middle" class="badge" fill="#ffffff">:50051</text>
+    </g>
+
+    <!-- Driver Service -->
+    <g transform="translate(20, 130)" filter="url(#cardShadow)">
+      <rect width="210" height="65" rx="8" fill="url(#serviceGrad)" stroke="#475569" stroke-width="1.2"/>
+      <text x="15" y="28" class="card-title">Driver Service</text>
+      <text x="15" y="46" class="card-subtitle">Shift State • Cab Type • Rating</text>
+      <rect x="150" y="14" width="45" height="18" rx="4" fill="#0284c7"/>
+      <text x="172" y="26" text-anchor="middle" class="badge" fill="#ffffff">:50052</text>
+    </g>
+
+    <!-- Trip Service -->
+    <g transform="translate(20, 210)" filter="url(#cardShadow)">
+      <rect width="210" height="65" rx="8" fill="url(#serviceGrad)" stroke="#06b6d4" stroke-width="1.5"/>
+      <text x="15" y="28" class="card-title">Trip Service</text>
+      <text x="15" y="46" class="card-subtitle">Lifecycle Coordinator • State Machine</text>
+      <rect x="150" y="14" width="45" height="18" rx="4" fill="#0284c7"/>
+      <text x="172" y="26" text-anchor="middle" class="badge" fill="#ffffff">:50053</text>
+    </g>
+
+    <!-- Matching Service -->
+    <g transform="translate(20, 290)" filter="url(#cardShadow)">
+      <rect width="210" height="65" rx="8" fill="url(#serviceGrad)" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="15" y="28" class="card-title">Matching Service</text>
+      <text x="15" y="46" class="card-subtitle">Radius Search • Dispatch Engine</text>
+      <rect x="150" y="14" width="45" height="18" rx="4" fill="#0284c7"/>
+      <text x="172" y="26" text-anchor="middle" class="badge" fill="#ffffff">:50054</text>
+    </g>
+
+    <!-- Payment Service -->
+    <g transform="translate(20, 370)" filter="url(#cardShadow)">
+      <rect width="210" height="65" rx="8" fill="url(#serviceGrad)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="15" y="28" class="card-title">Payment Service</text>
+      <text x="15" y="46" class="card-subtitle">Billing Transactions • Mock Gateway</text>
+      <rect x="150" y="14" width="45" height="18" rx="4" fill="#0284c7"/>
+      <text x="172" y="26" text-anchor="middle" class="badge" fill="#ffffff">:50055</text>
+    </g>
+  </g>
+
+  <!-- SECTION 3: KAFKA EVENT BROKER -->
+  <g transform="translate(520, 110)">
+    <rect width="280" height="470" rx="12" fill="url(#kafkaGrad)" stroke="#f43f5e" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <text x="140" y="30" text-anchor="middle" class="section-title" fill="#fb7185">APACHE KAFKA CLUSTER</text>
+    <text x="140" y="48" text-anchor="middle" class="card-subtitle" fill="#fda4af">Asynchronous Event Mesh (:9092)</text>
+
+    <!-- Topic: trip.requested -->
+    <g transform="translate(20, 75)">
+      <rect width="240" height="55" rx="6" fill="#180b15" stroke="#e11d48" stroke-width="1.2"/>
+      <circle cx="20" cy="27" r="6" fill="#e11d48"/>
+      <text x="36" y="24" class="topic-name">trip.requested</text>
+      <text x="36" y="40" class="card-subtitle">Trip Service ➔ Matching Service</text>
+    </g>
+
+    <!-- Topic: trip.matched -->
+    <g transform="translate(20, 155)">
+      <rect width="240" height="55" rx="6" fill="#180b15" stroke="#e11d48" stroke-width="1.2"/>
+      <circle cx="20" cy="27" r="6" fill="#e11d48"/>
+      <text x="36" y="24" class="topic-name">trip.matched</text>
+      <text x="36" y="40" class="card-subtitle">Matching Service ➔ Trip Service</text>
+    </g>
+
+    <!-- Topic: trip.completed -->
+    <g transform="translate(20, 235)">
+      <rect width="240" height="55" rx="6" fill="#180b15" stroke="#e11d48" stroke-width="1.2"/>
+      <circle cx="20" cy="27" r="6" fill="#e11d48"/>
+      <text x="36" y="24" class="topic-name">trip.completed</text>
+      <text x="36" y="40" class="card-subtitle">Trip Service ➔ Payment Service</text>
+    </g>
+
+    <!-- Topic: payment.processed -->
+    <g transform="translate(20, 315)">
+      <rect width="240" height="55" rx="6" fill="#180b15" stroke="#e11d48" stroke-width="1.2"/>
+      <circle cx="20" cy="27" r="6" fill="#e11d48"/>
+      <text x="36" y="24" class="topic-name">payment.processed</text>
+      <text x="36" y="40" class="card-subtitle">Payment Service ➔ Trip Service</text>
+    </g>
+
+    <!-- Zookeeper Coordinator -->
+    <g transform="translate(20, 395)">
+      <rect width="240" height="45" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+      <text x="120" y="27" text-anchor="middle" class="card-title" font-size="12" fill="#94a3b8">Zookeeper Coordinator (:2181)</text>
+    </g>
+  </g>
+
+  <!-- SECTION 4: DATA & CACHE LAYER -->
+  <g transform="translate(840, 110)">
+    <rect width="270" height="470" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <text x="135" y="30" text-anchor="middle" class="section-title">STORAGE &amp; CACHE</text>
+
+    <!-- Redis Geospatial Cache -->
+    <g transform="translate(20, 60)" filter="url(#cardShadow)">
+      <rect width="230" height="140" rx="8" fill="url(#redisGrad)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="20" y="32" class="card-title" fill="#fca5a5">Redis 7 (In-Memory)</text>
+      <text x="20" y="52" class="card-subtitle" fill="#fecaca">Sub-millisecond Geo Engine</text>
+
+      <rect x="20" y="70" width="190" height="26" rx="4" fill="#450a0a"/>
+      <text x="30" y="87" class="badge" fill="#fca5a5">GEOADD drivers:locations</text>
+
+      <rect x="20" y="102" width="190" height="26" rx="4" fill="#450a0a"/>
+      <text x="30" y="119" class="badge" fill="#fca5a5">GEOSEARCH (Radius 5km)</text>
+    </g>
+
+    <!-- PostgreSQL Relational Store -->
+    <g transform="translate(20, 230)" filter="url(#cardShadow)">
+      <rect width="230" height="200" rx="8" fill="url(#pgGrad)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="20" y="32" class="card-title" fill="#93c5fd">PostgreSQL 16 (ACID)</text>
+      <text x="20" y="52" class="card-subtitle" fill="#bfdbfe">Persistent Relational Storage</text>
+
+      <!-- Tables -->
+      <g transform="translate(20, 68)">
+        <rect width="190" height="24" rx="4" fill="#1e3a8a"/>
+        <text x="15" y="16" class="badge" fill="#bfdbfe">📄 users (Auth, Profiles)</text>
+      </g>
+      <g transform="translate(20, 98)">
+        <rect width="190" height="24" rx="4" fill="#1e3a8a"/>
+        <text x="15" y="16" class="badge" fill="#bfdbfe">📄 drivers (Vehicles, Status)</text>
+      </g>
+      <g transform="translate(20, 128)">
+        <rect width="190" height="24" rx="4" fill="#1e3a8a"/>
+        <text x="15" y="16" class="badge" fill="#bfdbfe">📄 trips (Coordinates, States)</text>
+      </g>
+      <g transform="translate(20, 158)">
+        <rect width="190" height="24" rx="4" fill="#1e3a8a"/>
+        <text x="15" y="16" class="badge" fill="#bfdbfe">📄 payments (Receipts, Txns)</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- SECTION 5: KUBERNETES & OBSERVABILITY FOOTER -->
+  <g transform="translate(40, 610)">
+    <rect width="1070" height="130" rx="12" fill="#0f172a" stroke="#64748b" stroke-width="1.2"/>
+    <text x="30" y="30" class="section-title" fill="#94a3b8">KUBERNETES DEPLOYMENT &amp; OBSERVABILITY TIER</text>
+
+    <!-- K8s Pods -->
+    <g transform="translate(30, 48)">
+      <rect width="240" height="60" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+      <text x="15" y="26" class="card-title" font-size="13">Kubernetes Cluster</text>
+      <text x="15" y="44" class="card-subtitle">Namespace: ridemesh • Deployments</text>
+    </g>
+
+    <!-- Prometheus Metrics -->
+    <g transform="translate(290, 48)">
+      <rect width="240" height="60" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+      <text x="15" y="26" class="card-title" font-size="13">Prometheus Metrics</text>
+      <text x="15" y="44" class="card-subtitle">/metrics • Latency • Trip Counters</text>
+    </g>
+
+    <!-- Uber Zap Logging -->
+    <g transform="translate(550, 48)">
+      <rect width="240" height="60" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1"/>
+      <text x="15" y="26" class="card-title" font-size="13">Structured Logging</text>
+      <text x="15" y="44" class="card-subtitle">Uber Zap JSON • Correlated Event IDs</text>
+    </g>
+
+    <!-- CI/CD GitHub Actions -->
+    <g transform="translate(810, 48)">
+      <rect width="230" height="60" rx="6" fill="#1e293b" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="15" y="26" class="card-title" font-size="13">GitHub Actions CI/CD</text>
+      <text x="15" y="44" class="card-subtitle">Go test • Docker Buildx • YAML Lint</text>
+    </g>
+  </g>
+
+  <!-- CONNECTING ARROWS -->
+  <!-- Client to Services (gRPC) -->
+  <line x1="175" y1="210" x2="245" y2="210" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowGrpc)"/>
+  <line x1="175" y1="380" x2="245" y2="380" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrowGrpc)"/>
+
+  <!-- Trip Service to Kafka -->
+  <line x1="460" y1="345" x2="535" y2="215" stroke="#f43f5e" stroke-width="2" marker-end="url(#arrowKafka)"/>
+
+  <!-- Kafka to Matching Service -->
+  <line x1="535" y1="225" x2="460" y2="425" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrowKafka)"/>
+
+  <!-- Matching Service to Redis -->
+  <path d="M 460 435 Q 650 490 855 230" fill="none" stroke="#ef4444" stroke-width="2" marker-end="url(#arrowRedis)"/>
+
+  <!-- Services to PostgreSQL -->
+  <line x1="460" y1="200" x2="855" y2="360" fill="none" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowPg)"/>
+</svg>

@@ -7,6 +7,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.5.5
+	github.com/prometheus/client_golang v1.19.0
 	github.com/segmentio/kafka-go v0.4.47
 	go.uber.org/fx v1.21.0
 	go.uber.org/zap v1.27.0
