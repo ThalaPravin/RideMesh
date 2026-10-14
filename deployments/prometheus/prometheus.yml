@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'rideflow-services'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'user-service:50051'
+          - 'driver-service:50052'
+          - 'trip-service:50053'
+          - 'matching-service:50054'
+          - 'payment-service:50055'
+          - 'api-gateway:8080'

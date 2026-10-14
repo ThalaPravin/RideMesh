@@ -35,7 +35,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        service: [user, driver, trip, matching, payment]
+        service: [user, driver, trip, matching, payment, gateway]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

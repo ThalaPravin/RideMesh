@@ -82,12 +82,23 @@
     </g>
 
     <!-- Driver Client -->
-    <g transform="translate(15, 230)" filter="url(#cardShadow)">
-      <rect width="120" height="100" rx="8" fill="url(#serviceGrad)" stroke="#38bdf8" stroke-width="1.5"/>
-      <circle cx="60" cy="35" r="16" fill="#0369a1"/>
-      <text x="60" y="40" text-anchor="middle" fill="#e0f2fe" font-size="14">🚗</text>
-      <text x="60" y="68" text-anchor="middle" class="card-title" font-size="13">Driver Client</text>
-      <text x="60" y="84" text-anchor="middle" class="card-subtitle">Telemetry Pings</text>
+    <g transform="translate(15, 200)" filter="url(#cardShadow)">
+      <rect width="120" height="95" rx="8" fill="url(#serviceGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="60" cy="30" r="14" fill="#0369a1"/>
+      <text x="60" y="35" text-anchor="middle" fill="#e0f2fe" font-size="13">🚗</text>
+      <text x="60" y="62" text-anchor="middle" class="card-title" font-size="13">Driver Client</text>
+      <text x="60" y="78" text-anchor="middle" class="card-subtitle">Telemetry Pings</text>
+    </g>
+
+    <!-- API Gateway -->
+    <g transform="translate(15, 320)" filter="url(#cardShadow)">
+      <rect width="120" height="120" rx="8" fill="url(#serviceGrad)" stroke="#a855f7" stroke-width="1.5"/>
+      <circle cx="60" cy="35" r="14" fill="#7e22ce"/>
+      <text x="60" y="40" text-anchor="middle" fill="#f3e8ff" font-size="13">🌐</text>
+      <text x="60" y="65" text-anchor="middle" class="card-title" font-size="12">API Gateway</text>
+      <text x="60" y="82" text-anchor="middle" class="card-subtitle" fill="#d8b4fe">:8080 (REST)</text>
+      <rect x="25" y="94" width="70" height="16" rx="4" fill="#6b21a8"/>
+      <text x="60" y="105" text-anchor="middle" class="badge" fill="#ffffff">Rate Limit</text>
     </g>
   </g>
 

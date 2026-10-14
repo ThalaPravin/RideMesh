@@ -125,6 +125,32 @@ services:
       - postgres
       - kafka
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: gateway
+    container_name: ridemesh-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+    depends_on:
+      - user-service
+      - trip-service
+      - matching-service
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: ridemesh-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployments/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - api-gateway
+
 volumes:
   postgres_data:
   redis_data:
